@@ -1,5 +1,7 @@
 # Water-Droplet-Detection-and-Frequency-Control
 
+SIMULATE: https://www.tinkercad.com/things/9g3vX53vufE-water-droplet-detection-and-frequency-control?sharecode=Yxy4roPgxAIneH6z85mShLLPLb5J4QQEKHJ-CsEoU3E
+
 DOWNLOAD PDF: [DPS_final.pdf](https://github.com/user-attachments/files/16106581/DPS_final.pdf)
 
 ![image](https://github.com/PAAKHI03/Water-Droplet-Detection-and-Frequency-Control/assets/162838705/58c851e1-2fd0-4c8b-9e6e-372e7d95e570)
