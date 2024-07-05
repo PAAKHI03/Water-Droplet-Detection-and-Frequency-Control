@@ -1,0 +1,101 @@
+//ARDUINO CODE:
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+// Initialize the LCD library with the I2C address 0x27
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// Define pins
+const int buttonPinIncrease = 2;   // Pin for pushbutton to increase frequency
+const int buttonPinDecrease = 3;   // Pin for pushbutton to decrease frequency
+const int ledPin = 9;     // Pin for LED to simulate solenoid valve
+
+// Variables
+unsigned long previousMillis = 0;
+unsigned long interval = 1000;  // 1 second interval
+int frequency = 1;  // Initial frequency of 1 DPS
+int maxFrequency = 20; // Maximum frequency
+int minFrequency = 1;  // Minimum frequency
+bool frequencyChanged = false; // Flag to track if frequency has changed
+
+// Debounce variables
+unsigned long lastButtonPressIncrease = 0;
+unsigned long lastButtonPressDecrease = 0;
+unsigned long debounceDelay = 50; // 50 milliseconds debounce time
+
+void setup() {
+  pinMode(buttonPinIncrease, INPUT_PULLUP); 
+  pinMode(buttonPinDecrease, INPUT_PULLUP); 
+  pinMode(ledPin, OUTPUT);
+  
+  Serial.begin(9600); // Initialize serial communication at 9600 bps
+  Serial.println("Setup complete");
+
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("Freq: ");
+  lcd.setCursor(0, 1);
+  lcd.print("DPS: ");
+  
+  // Debugging statements to check LCD initialization
+  Serial.println("LCD initialized");
+}
+
+void loop() {
+  unsigned long currentMillis = millis();
+  
+  // Increase frequency with pushbutton 1
+  if (digitalRead(buttonPinIncrease) == LOW && currentMillis - lastButtonPressIncrease > debounceDelay) {
+    if (frequency < maxFrequency) {
+      frequency++;  // Increase frequency
+      lastButtonPressIncrease = currentMillis; // Update the last button press time
+      frequencyChanged = true; // Set flag to indicate frequency has changed
+      Serial.println("Increase button pressed"); // Debugging
+    }
+  }
+  
+  // Decrease frequency with pushbutton 2
+  if (digitalRead(buttonPinDecrease) == LOW && currentMillis - lastButtonPressDecrease > debounceDelay) {
+    if (frequency > minFrequency) {
+      frequency--;  // Decrease frequency
+      lastButtonPressDecrease = currentMillis; // Update the last button press time
+      frequencyChanged = true; // Set flag to indicate frequency has changed
+      Serial.println("Decrease button pressed"); // Debugging
+    }
+  }
+  
+  // Update LCD display only when frequency changes
+  if (frequencyChanged) {
+    lcd.setCursor(6, 0);
+    lcd.print("    ");  // Clear previous frequency display
+    lcd.setCursor(6, 0);
+    lcd.print(frequency);
+
+    // Calculate drops per second (DPS)
+    int dropsPerSecond = frequency / 2;
+    lcd.setCursor(6, 1);
+    lcd.print("    ");  // Clear previous DPS display
+    lcd.setCursor(6, 1);
+    lcd.print(dropsPerSecond);
+
+    Serial.print("Frequency changed to: ");
+    Serial.println(frequency);
+    Serial.print("Drops per second: ");
+    Serial.println(dropsPerSecond);
+    
+    frequencyChanged = false; // Reset flag
+  }
+  
+  // Control the LED based on the current frequency
+  if (currentMillis - previousMillis >= interval / frequency) {
+    previousMillis = currentMillis;
+    
+    // Toggle the LED state
+    digitalWrite(ledPin, HIGH);
+    delay(100);   // LED on duration to simulate a droplet
+    digitalWrite(ledPin, LOW);
+    //Serial.println("LED toggled"); // Debugging
+  }
+}
